@@ -1,9 +1,12 @@
+cd ~/rescueoldvk/web-vesion
+
+cat > index.html << 'EOF'
 <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OldVK — с комментариями</title>
+    <title>OldVK — личные страницы</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; background: #edeef0; min-height: 100vh; }
@@ -12,7 +15,6 @@
         .logo-area { display: flex; align-items: center; gap: 15px; }
         .logo { font-size: 24px; font-weight: bold; color: white; text-shadow: 1px 1px 0 #3a5a7e; text-decoration: none; cursor: pointer; }
         .shapka-img { max-height: 40px; border-radius: 4px; }
-        .search-box { background: #405d7a; border-radius: 16px; padding: 6px 12px; border: none; color: white; width: 200px; }
         .container { max-width: 980px; margin: 0 auto; padding: 70px 16px 20px; display: flex; gap: 20px; flex-wrap: wrap; }
         .sidebar { width: 220px; flex-shrink: 0; }
         .menu-item { background: white; padding: 12px 16px; margin-bottom: 2px; color: #2a5885; cursor: pointer; border-radius: 4px; display: flex; align-items: center; gap: 10px; }
@@ -20,8 +22,8 @@
         .content { flex: 1; min-width: 280px; }
         .card { background: white; border-radius: 4px; margin-bottom: 16px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
         .card-header { padding: 16px; border-bottom: 1px solid #e7e8ec; display: flex; align-items: center; gap: 12px; }
-        .avatar { width: 40px; height: 40px; border-radius: 50%; background: #e1e9f5; display: flex; align-items: center; justify-content: center; font-size: 20px; }
-        .author-name { font-weight: bold; color: #2a5885; }
+        .avatar { width: 40px; height: 40px; border-radius: 50%; background: #e1e9f5; display: flex; align-items: center; justify-content: center; font-size: 20px; object-fit: cover; }
+        .author-name { font-weight: bold; color: #2a5885; cursor: pointer; }
         .post-date { font-size: 12px; color: #93979f; }
         .post-content { padding: 16px; line-height: 1.5; color: #2c3e50; }
         .post-actions { padding: 12px 16px; border-top: 1px solid #e7e8ec; display: flex; gap: 20px; }
@@ -36,14 +38,24 @@
         .widget-title { font-weight: bold; margin-bottom: 12px; color: #2a5885; }
         .comments-section { margin-top: 16px; padding-top: 16px; border-top: 1px solid #e7e8ec; }
         .comment { padding: 12px 0; border-bottom: 1px solid #e7e8ec; display: flex; gap: 10px; }
-        .comment-avatar { width: 32px; height: 32px; border-radius: 50%; background: #e1e9f5; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+        .comment-avatar { width: 32px; height: 32px; border-radius: 50%; background: #e1e9f5; display: flex; align-items: center; justify-content: center; font-size: 14px; object-fit: cover; }
         .comment-content { flex: 1; }
         .comment-author { font-weight: bold; font-size: 13px; color: #2a5885; }
         .comment-text { font-size: 13px; margin-top: 4px; }
         .comment-date { font-size: 11px; color: #93979f; margin-top: 4px; }
+        .profile-header { text-align: center; padding: 20px; }
+        .profile-avatar { width: 100px; height: 100px; border-radius: 50%; margin: 0 auto 16px; object-fit: cover; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.1); cursor: pointer; }
+        .profile-name { font-size: 24px; font-weight: bold; margin-bottom: 8px; }
+        .profile-status { color: #666; margin-bottom: 16px; }
+        .profile-actions { display: flex; gap: 12px; justify-content: center; margin-bottom: 20px; }
+        .edit-profile-btn { background: #e1e9f5; color: #2a5885; padding: 8px 16px; border-radius: 20px; cursor: pointer; font-size: 14px; }
         .notif-badge { background: #e06a6a; color: white; border-radius: 12px; padding: 2px 8px; font-size: 12px; margin-left: 8px; }
-        .comment-input-area { display: flex; gap: 8px; margin-top: 12px; }
-        .comment-input-area input { flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
+        .user-card { display: flex; align-items: center; gap: 12px; padding: 12px; border-bottom: 1px solid #eee; cursor: pointer; }
+        .user-card:hover { background: #f5f5f5; }
+        .user-avatar { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; background: #e1e9f5; }
+        .user-info { flex: 1; }
+        .user-name { font-weight: bold; color: #2a5885; }
+        .user-status { font-size: 12px; color: #666; }
     </style>
 </head>
 <body>
@@ -54,16 +66,15 @@
             <a href="#" class="logo" onclick="loadFeed(); return false;">OldVK</a>
             <img src="shapka.jpg" class="shapka-img" alt="OldVK" onerror="this.style.display='none'">
         </div>
-        <input type="text" class="search-box" placeholder="Поиск людей" id="searchInput" onkeypress="if(event.key==='Enter') searchUsers()">
     </div>
 </div>
 
 <div class="container">
     <div class="sidebar">
-        <div class="menu-item" onclick="loadFeed()">📱 Моя страница</div>
+        <div class="menu-item" onclick="loadMyProfile()">👤 Моя страница</div>
         <div class="menu-item" onclick="loadFeed()">📰 Новости</div>
         <div class="menu-item" onclick="loadDialogs()">💬 Сообщения</div>
-        <div class="menu-item" onclick="showSearchPage()">🔍 Поиск</div>
+        <div class="menu-item" onclick="showAllUsers()">👥 Все пользователи</div>
         <div class="menu-item" onclick="showNotifications()">🔔 Уведомления</div>
         <div class="menu-item" onclick="showAuthForm()">🔐 Вход/Регистрация</div>
     </div>
@@ -78,7 +89,7 @@
                 </div>
             </div>
             <div class="post-content">
-                <p>✨ Теперь с комментариями и уведомлениями!</p>
+                <p>✨ Полноценная соцсеть с личными страницами и аватарками!</p>
                 <p>🔐 <a href="#" onclick="showAuthForm(); return false;">Авторизуйтесь</a></p>
             </div>
         </div>
@@ -87,7 +98,7 @@
     <div class="right-panel">
         <div class="widget">
             <div class="widget-title">💡 Советы</div>
-            <div>• Комментируйте посты<br>• Получайте уведомления<br>• Общайтесь</div>
+            <div>• Загрузи аватарку<br>• Оформи страницу<br>• Добавляй посты</div>
         </div>
         <div class="widget" id="statsWidget">
             <div class="widget-title">📊 Статус</div>
@@ -99,7 +110,6 @@
 <script>
     let token = localStorage.getItem('oldvk_token');
     let userId = localStorage.getItem('oldvk_user_id');
-    let currentChatUserId = null;
 
     async function apiCall(endpoint, method = 'GET', data = null) {
         const headers = { 'Content-Type': 'application/json' };
@@ -129,21 +139,21 @@
         for (let p of posts) {
             html += `<div class="card" id="post-${p.id}">
                 <div class="card-header">
-                    <div class="avatar">${p.avatar || '👤'}</div>
+                    <img src="${p.avatar || '/default-avatar.png'}" class="avatar" onerror="this.src='/default-avatar.png'">
                     <div class="author-info">
-                        <div class="author-name">${p.first_name || p.username} ${p.last_name || ''}</div>
+                        <div class="author-name" onclick="showUserProfile(${p.user_id})">${p.first_name || p.username}</div>
                         <div class="post-date">${p.date ? new Date(p.date).toLocaleString() : 'Только что'}</div>
                     </div>
                 </div>
-                <div class="post-content">${p.content}</div>
+                <div class="post-content">${escapeHtml(p.content)}</div>
                 <div class="post-actions">
                     <div class="action-btn" onclick="likePost(${p.id})">❤️ <span id="likes-${p.id}">${p.likes || 0}</span></div>
                     <div class="action-btn" onclick="toggleComments(${p.id})">💬 Комментарии (<span id="comments-count-${p.id}">${p.comments_count || 0}</span>)</div>
                 </div>
                 <div class="comments-section" id="comments-${p.id}" style="display:none; padding:16px;">
                     <div id="comments-list-${p.id}"></div>
-                    <div class="comment-input-area">
-                        <input type="text" id="comment-input-${p.id}" placeholder="Написать комментарий...">
+                    <div style="display:flex; gap:8px; margin-top:12px;">
+                        <input type="text" id="comment-input-${p.id}" placeholder="Написать комментарий..." style="flex:1; padding:8px;">
                         <button class="btn" style="padding:8px 16px;" onclick="addComment(${p.id})">→</button>
                     </div>
                 </div>
@@ -151,7 +161,16 @@
         }
         html += '</div>';
         document.getElementById('content').innerHTML = html;
-        loadUnreadCount();
+    }
+
+    function escapeHtml(text) {
+        if (!text) return '';
+        return text.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
     }
 
     async function createPost() {
@@ -187,9 +206,9 @@
             for (let c of res.comments) {
                 const date = c.date ? new Date(c.date).toLocaleString() : '';
                 html += `<div class="comment">
-                            <div class="comment-avatar">${c.avatar || '👤'}</div>
+                            <img src="${c.avatar || '/default-avatar.png'}" class="comment-avatar" onerror="this.src='/default-avatar.png'">
                             <div class="comment-content">
-                                <div class="comment-author">${c.first_name || c.username}</div>
+                                <div class="comment-author" onclick="showUserProfile(${c.user_id})">${c.first_name || c.username}</div>
                                 <div class="comment-text">${escapeHtml(c.content)}</div>
                                 <div class="comment-date">${date}</div>
                             </div>
@@ -199,16 +218,6 @@
         } else {
             container.innerHTML = '<div style="color:#999; text-align:center; padding:12px;">Нет комментариев. Будьте первым!</div>';
         }
-    }
-
-    function escapeHtml(text) {
-        if (!text) return '';
-        return text.replace(/[&<>]/g, function(m) {
-            if (m === '&') return '&amp;';
-            if (m === '<') return '&lt;';
-            if (m === '>') return '&gt;';
-            return m;
-        });
     }
 
     async function addComment(postId) {
@@ -225,33 +234,112 @@
         }
     }
 
-    async function loadUnreadCount() {
-        const res = await apiCall('/messages/unread');
-        if (res.notifications > 0) {
-            document.title = `📬 OldVK (${res.notifications})`;
+    async function showAllUsers() {
+        if (!token) { showAuthForm(); return; }
+        showLoading();
+        const res = await apiCall('/users/all');
+        if (res.users) {
+            let html = '<div class="card"><div class="card-header"><div class="avatar">👥</div><div class="author-info"><div class="author-name">Все пользователи</div></div></div><div class="post-content">';
+            for (let u of res.users) {
+                html += `<div class="user-card" onclick="showUserProfile(${u.id})">
+                            <img src="${u.avatar || '/default-avatar.png'}" class="user-avatar" onerror="this.src='/default-avatar.png'">
+                            <div class="user-info">
+                                <div class="user-name">${u.first_name || u.username} ${u.last_name || ''}</div>
+                                <div class="user-status">${u.status || 'В сети'}</div>
+                            </div>
+                            <button class="btn" style="padding:4px 12px;" onclick="event.stopPropagation(); openChat(${u.id})">Написать</button>
+                        </div>`;
+            }
+            html += '</div></div>';
+            document.getElementById('content').innerHTML = html;
         }
     }
 
-    async function showNotifications() {
+    async function showUserProfile(uid) {
         showLoading();
-        const res = await apiCall('/notifications');
-        if (res.notifications) {
-            let html = '<div class="card"><div class="card-header"><div class="avatar">🔔</div><div class="author-info"><div class="author-name">Уведомления</div></div></div><div class="post-content">';
-            if (res.notifications.length === 0) {
-                html += '<p>Нет уведомлений</p>';
-            }
-            for (let n of res.notifications) {
-                let text = '';
-                if (n.type === 'like') text = `❤️ ${n.from_user.first_name || n.from_user.username} поставил(а) лайк вашему посту`;
-                if (n.type === 'comment') text = `💬 ${n.from_user.first_name || n.from_user.username} прокомментировал(а) ваш пост`;
-                html += `<div style="padding:12px; border-bottom:1px solid #eee; ${!n.read ? 'background:#fff4e5;' : ''}">
-                            ${text}<br><small>${new Date(n.date).toLocaleString()}</small>
+        const res = await apiCall(`/users/profile?user_id=${uid}`);
+        if (res.profile) {
+            const p = res.profile;
+            let html = `<div class="card">
+                <div class="profile-header">
+                    <img src="${p.avatar || '/default-avatar.png'}" class="profile-avatar" onerror="this.src='/default-avatar.png'" ${uid == userId ? 'onclick="uploadAvatar()"' : ''}>
+                    <div class="profile-name">${p.first_name} ${p.last_name}</div>
+                    <div class="profile-status">${p.status || 'Нет статуса'}</div>
+                    <div class="profile-actions">
+                        <button class="btn" onclick="openChat(${uid})">✉️ Написать</button>
+                        ${uid == userId ? '<button class="edit-profile-btn" onclick="editProfile()">✏️ Редактировать профиль</button>' : ''}
+                    </div>
+                </div>
+            </div>`;
+            // Загружаем посты пользователя
+            const feedRes = await apiCall('/feed');
+            const userPosts = feedRes.posts ? feedRes.posts.filter(p => p.user_id == uid) : [];
+            html += `<div class="card"><div class="card-header"><div class="avatar">📝</div><div class="author-info"><div class="author-name">Посты ${p.first_name}</div></div></div><div class="post-content">`;
+            if (userPosts.length === 0) html += '<p>Нет постов</p>';
+            for (let post of userPosts) {
+                html += `<div style="padding:12px; border-bottom:1px solid #eee;">
+                            ${escapeHtml(post.content)}<br>
+                            <small>❤️ ${post.likes || 0} | 💬 ${post.comments_count || 0}</small>
                          </div>`;
             }
             html += '</div></div>';
             document.getElementById('content').innerHTML = html;
-            await apiCall('/notifications/read', 'POST', { token });
-            loadUnreadCount();
+        }
+    }
+
+    async function loadMyProfile() {
+        if (!token) { showAuthForm(); return; }
+        showUserProfile(userId);
+    }
+
+    function uploadAvatar() {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'image/jpeg,image/png';
+        input.onchange = async (e) => {
+            const file = e.target.files[0];
+            const formData = new FormData();
+            formData.append('avatar', file);
+            const resp = await fetch('/api/avatar/upload', {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` },
+                body: formData
+            });
+            const result = await resp.json();
+            if (result.success) {
+                alert('Аватарка обновлена!');
+                loadMyProfile();
+            }
+        };
+        input.click();
+    }
+
+    function editProfile() {
+        document.getElementById('content').innerHTML = `
+            <div class="card">
+                <div class="card-header"><div class="avatar">✏️</div><div class="author-info"><div class="author-name">Редактирование профиля</div></div></div>
+                <div class="post-content">
+                    <div class="form-group"><input type="text" id="editFirstName" placeholder="Имя"></div>
+                    <div class="form-group"><input type="text" id="editLastName" placeholder="Фамилия"></div>
+                    <div class="form-group"><input type="text" id="editStatus" placeholder="Статус"></div>
+                    <div class="form-group"><textarea id="editAbout" rows="3" placeholder="О себе"></textarea></div>
+                    <div class="form-group"><input type="color" id="editTheme" value="#507299"></div>
+                    <button class="btn" onclick="saveProfile()">Сохранить</button>
+                </div>
+            </div>
+        `;
+    }
+
+    async function saveProfile() {
+        const first_name = document.getElementById('editFirstName').value;
+        const last_name = document.getElementById('editLastName').value;
+        const status = document.getElementById('editStatus').value;
+        const about = document.getElementById('editAbout').value;
+        const theme_color = document.getElementById('editTheme').value;
+        const res = await apiCall('/profile/update', 'POST', { token, first_name, last_name, status, about, theme_color });
+        if (res.success) {
+            alert('Профиль обновлён!');
+            loadMyProfile();
         }
     }
 
@@ -265,18 +353,20 @@
     function renderDialogs(dialogs) {
         let html = `<div class="card"><div class="card-header"><div class="avatar">💬</div><div class="author-info"><div class="author-name">Диалоги</div></div></div><div class="post-content">`;
         for (let d of dialogs) {
-            html += `<div style="padding:12px; border-bottom:1px solid #eee; cursor:pointer" onclick="openChat(${d.id})">
-                        <strong>${d.first_name || d.username}</strong><br>
-                        <small>${d.last_message || '...'}</small>
+            html += `<div class="user-card" onclick="openChat(${d.id})">
+                        <img src="${d.avatar || '/default-avatar.png'}" class="user-avatar" onerror="this.src='/default-avatar.png'">
+                        <div class="user-info">
+                            <div class="user-name">${d.first_name || d.username}</div>
+                            <div class="user-status">${d.last_message || '...'}</div>
+                        </div>
                         ${d.unread ? `<span class="notif-badge">${d.unread}</span>` : ''}
-                     </div>`;
+                    </div>`;
         }
         html += '</div></div>';
         document.getElementById('content').innerHTML = html;
     }
 
     async function openChat(otherId) {
-        currentChatUserId = otherId;
         await apiCall('/messages/read', 'POST', { token, other_id: otherId });
         showLoading();
         const res = await apiCall(`/messages/with?user_id=${otherId}`);
@@ -320,26 +410,22 @@
         }
     }
 
-    async function searchUsers() {
-        const query = document.getElementById('searchInput').value.trim();
-        if (!query) return;
-        const res = await apiCall(`/users/search?q=${encodeURIComponent(query)}`);
-        if (res.users) {
-            let html = '<div class="card"><div class="card-header"><div class="avatar">🔍</div><div class="author-info"><div class="author-name">Результаты поиска</div></div></div><div class="post-content">';
-            for (let u of res.users) {
-                html += `<div style="padding:12px; border-bottom:1px solid #eee; display:flex; justify-content:space-between">
-                            <strong>${u.first_name || u.username} ${u.last_name || ''}</strong>
-                            <button class="btn" style="padding:4px 12px;" onclick="openChat(${u.id})">Написать</button>
+    async function showNotifications() {
+        showLoading();
+        const res = await apiCall('/notifications');
+        if (res.notifications) {
+            let html = '<div class="card"><div class="card-header"><div class="avatar">🔔</div><div class="author-info"><div class="author-name">Уведомления</div></div></div><div class="post-content">';
+            if (res.notifications.length === 0) html += '<p>Нет уведомлений</p>';
+            for (let n of res.notifications) {
+                let text = n.type === 'like' ? `❤️ ${n.from_user.first_name || n.from_user.username} лайкнул ваш пост` : `💬 ${n.from_user.first_name || n.from_user.username} прокомментировал ваш пост`;
+                html += `<div style="padding:12px; border-bottom:1px solid #eee; ${!n.read ? 'background:#fff4e5;' : ''}">
+                            ${text}<br><small>${new Date(n.date).toLocaleString()}</small>
                          </div>`;
             }
             html += '</div></div>';
             document.getElementById('content').innerHTML = html;
+            await apiCall('/notifications/read', 'POST', { token });
         }
-    }
-
-    function showSearchPage() {
-        document.getElementById('searchInput').focus();
-        searchUsers();
     }
 
     function showAuthForm() {
@@ -371,7 +457,7 @@
             token = res.access_token; userId = res.user_id;
             localStorage.setItem('oldvk_token', token);
             localStorage.setItem('oldvk_user_id', userId);
-            loadFeed();
+            loadMyProfile();
         } else { msgDiv.innerHTML = '<span class="error">❌ Неверный логин/пароль</span>'; }
     }
 
@@ -390,11 +476,14 @@
     }
 
     async function loadStats() {
-        const res = await apiCall('/users/search?q=');
+        const res = await apiCall('/users/all');
         if (res.users) document.getElementById('statsWidget').innerHTML = `<div class="widget-title">📊 Статистика</div><div>Пользователей: ${res.users.length}</div>`;
     }
 
-    if (token) { loadFeed(); loadStats(); } else { showAuthForm(); loadStats(); }
+    if (token) { loadMyProfile(); loadStats(); } else { showAuthForm(); loadStats(); }
 </script>
 </body>
 </html>
+EOF
+
+echo "✅ Готово! Запускай сервер: python3 social_server_avatar.py"
