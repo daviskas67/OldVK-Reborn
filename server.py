@@ -5,10 +5,9 @@ import secrets
 import json
 import os
 import urllib.parse
+import argparse
 from datetime import datetime
 from http.server import HTTPServer, BaseHTTPRequestHandler
-
-DB_PATH = '/home/daviskas/rescueoldvk/web-vesion/social.db'
 
 def init_db():
     conn = sqlite3.connect(DB_PATH)
@@ -67,8 +66,6 @@ def init_db():
     )''')
     conn.commit()
     conn.close()
-
-init_db()
 
 class SocialServer(BaseHTTPRequestHandler):
     def do_GET(self):
@@ -237,7 +234,6 @@ class SocialServer(BaseHTTPRequestHandler):
                      ORDER BY p.created_at DESC LIMIT 50""")
         posts = []
         for row in c.fetchall():
-            # Проверяем, лайкнул ли текущий пользователь
             current_user = self.get_user_by_token(token)
             user_liked = False
             if current_user:
@@ -288,7 +284,6 @@ class SocialServer(BaseHTTPRequestHandler):
             c.execute("INSERT INTO likes (user_id, post_id, created_at) VALUES (?,?,?)", 
                       (user['id'], post_id, datetime.now().isoformat()))
             c.execute("UPDATE posts SET likes = likes + 1 WHERE id=?", (post_id,))
-            # Уведомление
             c.execute("SELECT user_id FROM posts WHERE id=?", (post_id,))
             post_owner = c.fetchone()
             if post_owner and post_owner[0] != user['id']:
@@ -338,7 +333,6 @@ class SocialServer(BaseHTTPRequestHandler):
         c.execute("INSERT INTO comments (post_id, user_id, content, created_at) VALUES (?,?,?,?)",
                   (post_id, user['id'], content, datetime.now().isoformat()))
         c.execute("UPDATE posts SET comments_count = comments_count + 1 WHERE id=?", (post_id,))
-        # Уведомление
         c.execute("SELECT user_id FROM posts WHERE id=?", (post_id,))
         post_owner = c.fetchone()
         if post_owner and post_owner[0] != user['id']:
@@ -505,13 +499,19 @@ class SocialServer(BaseHTTPRequestHandler):
         self.send_response(200)
         self.send_header('Content-Type', 'text/html; charset=utf-8')
         self.end_headers()
-        with open('/home/daviskas/rescueoldvk/web-vesion/index.html', 'r', encoding='utf-8') as f:
-            html = f.read()
-        self.wfile.write(html.encode())
+        # Ищем index.html строго внутри папки content/ относительно текущего запуска
+        webapp_path = os.path.join('content', 'index.html')
+        try:
+            with open(webapp_path, 'r', encoding='utf-8') as f:
+                html = f.read()
+            self.wfile.write(html.encode())
+        except FileNotFoundError:
+            self.wfile.write("<h1>Ошибка: content/index.html не найден!</h1>".encode("utf-8"))
 
     def serve_static(self):
-        path = self.path[1:]
-        if os.path.exists(path):
+        # Превращаем путь вида /res/logo.png в content/res/logo.png
+        path = os.path.join('content', self.path[1:])
+        if os.path.exists(path) and not os.path.isdir(path):
             self.send_response(200)
             if path.endswith('.css'):
                 self.send_header('Content-Type', 'text/css')
@@ -530,10 +530,28 @@ class SocialServer(BaseHTTPRequestHandler):
             self.send_error(404)
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description="OldVK Альт-Сервер")
+
+    parser.add_argument('--port', type=int, default=9090, help='Порт для запуска сервера (по умолчанию: 9090)')
+    parser.add_argument('--host', type=str, default='0.0.0.0', help='Хост/IP для прослушивания (по умолчанию: 0.0.0.0)')
+    parser.add_argument('--db', type=str, default='social.db', help='Путь к файлу базы данных SQLite (по умолчанию: social.db)')
+
+    args = parser.parse_args()
+
+    DB_PATH = args.db
+
+    init_db()
+
     print("="*50)
     print("OldVK Social Network - с комментариями и уведомлениями")
     print("="*50)
-    print("Web: http://localhost:8081")
-    print("API: http://localhost:8081/api")
+    print(f"Web: http://{args.host}:{args.port}")
+    print(f"API: http://{args.host}:{args.port}/api")
+    print(f"База данных: {os.path.abspath(DB_PATH)}")
+    print(f"Папка контента: {os.path.abspath('content/')}")
     print("="*50)
-    HTTPServer(("0.0.0.0", 8081), SocialServer).serve_forever()
+
+    try:
+        HTTPServer((args.host, args.port), SocialServer).serve_forever()
+    except KeyboardInterrupt:
+        print("\nСервер остановлен.")

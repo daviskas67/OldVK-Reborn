@@ -68,10 +68,11 @@
 
  1. Клонирование или скачивание
 
+```
 bash
 cd ~
-git clone https://github.com/your-username/oldvk.git
- или просто скопируйте файлы в папку
+git clone https://github.com/daviskas67/oldvk.git
+или просто скопируйте файлы в папку
 
 
  2. Установка зависимостей
@@ -88,18 +89,18 @@ sudo apt install python3 sqlite3
 
 bash
 cd oldvk/web-vesion
-python3 social_server_avatar.py
+python3 server.py
 
 
  4. Доступ к сайту
 
-Откройте в браузере: http://localhost:8081
+Откройте в браузере: http://localhost:9090
 
  5. Публичный доступ (через интернет)
 
 bash
  Запустите туннель в отдельном терминале
-ssh -R 80:localhost:8081 localhost.run
+ssh -R 80:localhost:9090 localhost.run
 
  Получите адрес типа: https://xxxxxx.lhr.life
  Поделитесь им с друзьями!
