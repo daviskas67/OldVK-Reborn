@@ -6,20 +6,20 @@ import web
 
 class OldVKRequestHandler(BaseHTTPRequestHandler):
     def do_GET(self):
-        # 1. Сначала проверяем, не API ли это запрос
+        # 1. Сначала проверяем, не API ли это запрос.
         if api.handle_api_request(self, self.path, method='GET'):
             return
         # 2. Если не API, пытаемся отдать статический файл (HTML/CSS/JS)
         if web.handle_web_request(self, self.path):
             return
         # 3. Если ничего не нашли — 404
-        self.send_error(404, "Страница не найдена")
+        self.send_error(404, "Not found")
 
     def do_POST(self):
         # POST-запросы обычно идут только в API (регистрация, посты, сообщения)
         if api.handle_api_request(self, self.path, method='POST'):
             return
-        self.send_error(404, "API эндпоинт не найден")
+        self.send_error(404, "API not found")
 
 def main():
     parser = argparse.ArgumentParser(description="OldVK-Reborn Server")
